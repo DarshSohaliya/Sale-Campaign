@@ -28,8 +28,7 @@ public class CampaignScheduler {
     @Autowired
     private PricehistoryRepository pricehistoryRepository;
 
-    @Scheduled(fixedRate = 1000)
-
+//    @Scheduled(fixedRate = 600000)
     @Transactional
     public void applyCampaignDiscounts(){
         LocalDate today = LocalDate.now();
@@ -43,12 +42,14 @@ public class CampaignScheduler {
                     PriceHistory priceHistory = new PriceHistory();
                     priceHistory.setProductId(String.valueOf(product.getProductId()));
                     priceHistory.setOldPrice(product.getCurrentPrice());
-                    priceHistory.setNewPrice(calculateNewPrice(product.getCurrentPrice(), product.getDiscount()));
+                    priceHistory.setNewPrice(calculateNewPrice(product.getProductMRP(), product.getDiscount()));
                     priceHistory.setChangeDate(today.toString());
+                    priceHistory.setNewDiscount(discount.getDiscount());
+                    priceHistory.setOldDiscount(product.getDiscount());
                     pricehistoryRepository.save(priceHistory);
 
 
-                    double newPrice = calculateNewPrice(product.getCurrentPrice() ,product.getDiscount());
+                    double newPrice = calculateNewPrice(product.getProductMRP() ,discount.getDiscount());
                     product.setCurrentPrice(newPrice);
                     product.setDiscount(discount.getDiscount());
                     productRepository.save(product);
@@ -59,18 +60,25 @@ public class CampaignScheduler {
     }
 
 //    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(fixedRate = 600000)
+
+
 @Transactional
     public void restorePriceAfterCampaignEnd(){
         LocalDate tody = LocalDate.now();
         List<Campaign> campaigns = campaignRepository.findByEndDate(tody.toString());
-
+      System.out.println("###111");
+      System.out.println(campaigns);
         for(Campaign campaign : campaigns){
             for(CampaignDiscount discount : campaign.getCampaignDiscounts()){
+                System.out.println("###222");
                 Product product = productRepository.findByProductId(Long.valueOf(discount.getProductId()));
                 if(product != null){
                     PriceHistory lastHistory = pricehistoryRepository.findTopByProductIdOrderByChangeDateDesc(String.valueOf(product.getProductId()));
+                    System.out.println("###333");
                     if (lastHistory!=null){
                         product.setCurrentPrice(lastHistory.getOldPrice());
+                        product.setDiscount(lastHistory.getOldDiscount());
                         productRepository.save(product);
                     }
                 }

@@ -15,6 +15,25 @@ public class PriceHistory {
    private String productId;
    private double oldPrice;
 
+    public double getOldDiscount() {
+        return oldDiscount;
+    }
+
+    public void setOldDiscount(double oldDiscount) {
+        this.oldDiscount = oldDiscount;
+    }
+
+    public double getNewDiscount() {
+        return newDiscount;
+    }
+
+    public void setNewDiscount(double newDiscount) {
+        this.newDiscount = newDiscount;
+    }
+
+    private double oldDiscount;
+   private double newDiscount;
+
     public long getHistoryId() {
         return historyId;
     }
